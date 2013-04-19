@@ -2,7 +2,7 @@
 // MUST match PkgCmdID.h
 using System;
 
-namespace SoftwareNinjas.SoftwareNinjas_TestOriented_VisualStudio
+namespace SoftwareNinjas.TestOriented.VisualStudio
 {
     static class PkgCmdIDList
     {

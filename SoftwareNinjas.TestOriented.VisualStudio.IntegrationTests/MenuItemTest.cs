@@ -20,10 +20,10 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.IntegrationTests
         {
             UIThreadInvoker.Invoke((ThreadInvoker) delegate
             {
-                var menuItemCmd = new CommandID(SoftwareNinjas_TestOriented_VisualStudio.GuidList.guidSoftwareNinjas_TestOriented_VisualStudioCmdSet, (int) SoftwareNinjas_TestOriented_VisualStudio.PkgCmdIDList.cmdidGenerateTestStub);
+                var menuItemCmd = new CommandID(GuidList.guidSoftwareNinjas_TestOriented_VisualStudioCmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
 
                 // Create the DialogBoxListener Thread.
-                var expectedDialogBoxText = string.Format(CultureInfo.CurrentCulture, "{0}\n\nInside {1}.MenuItemCallback()", "SoftwareNinjas.TestOriented.VisualStudio", "SoftwareNinjas.SoftwareNinjas_TestOriented_VisualStudio.SoftwareNinjas_TestOriented_VisualStudioPackage");
+                var expectedDialogBoxText = string.Format(CultureInfo.CurrentCulture, "{0}\n\nInside {1}.MenuItemCallback()", "SoftwareNinjas.TestOriented.VisualStudio", "SoftwareNinjas.TestOriented.VisualStudio.SoftwareNinjas_TestOriented_VisualStudioPackage");
                 var purger = new DialogBoxPurger(NativeMethods.IDOK, expectedDialogBoxText);
                 
                 try
