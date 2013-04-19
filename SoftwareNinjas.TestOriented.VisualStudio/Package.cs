@@ -30,7 +30,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(GuidList.PkgString)]
-    public sealed class SoftwareNinjas_TestOriented_VisualStudioPackage : Package
+    public sealed class Package : Microsoft.VisualStudio.Shell.Package
     {
         /// <summary>
         /// Default constructor of the package.
@@ -39,7 +39,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
         /// not sited yet inside Visual Studio environment. The place to do all the other 
         /// initialization is the Initialize method.
         /// </summary>
-        public SoftwareNinjas_TestOriented_VisualStudioPackage()
+        public Package()
         {
             Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }

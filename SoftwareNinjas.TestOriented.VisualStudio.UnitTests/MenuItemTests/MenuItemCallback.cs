@@ -30,7 +30,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests.MenuItemTests
         public void InitializeMenuCommand()
         {
             // Create the package
-            var package = new SoftwareNinjas_TestOriented_VisualStudioPackage() as IVsPackage;
+            var package = new Package() as IVsPackage;
             Assert.IsNotNull(package, "The object does not implement IVsPackage");
 
             // Create a basic service provider
@@ -41,7 +41,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests.MenuItemTests
 
             //Verify that the menu command can be found
             var menuCommandId = new CommandID(GuidList.CmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
-            var info = typeof(Package).GetMethod("GetService", BindingFlags.Instance | BindingFlags.NonPublic);
+            var info = typeof(Microsoft.VisualStudio.Shell.Package).GetMethod("GetService", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.IsNotNull(info);
             var mcs = info.Invoke(package, new object[] { ( typeof(IMenuCommandService) ) }) as OleMenuCommandService;
             Assert.IsNotNull(mcs.FindCommand(menuCommandId));
@@ -51,7 +51,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests.MenuItemTests
         public void MenuItemCallback()
         {
             // Create the package
-            var package = new SoftwareNinjas_TestOriented_VisualStudioPackage() as IVsPackage;
+            var package = new Package() as IVsPackage;
             Assert.IsNotNull(package, "The object does not implement IVsPackage");
 
             // Create a basic service provider

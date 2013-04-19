@@ -23,7 +23,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests
         [TestMethod]
         public void IsIVsPackage()
         {
-            var package = new SoftwareNinjas_TestOriented_VisualStudioPackage();
+            var package = new Package();
             Assert.IsNotNull(package as IVsPackage, "The object does not implement IVsPackage");
         }
 
@@ -31,7 +31,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests
         public void SetSite()
         {
             // Create the package
-            var package = new SoftwareNinjas_TestOriented_VisualStudioPackage() as IVsPackage;
+            var package = new Package() as IVsPackage;
             Assert.IsNotNull(package, "The object does not implement IVsPackage");
 
             // Create a basic service provider

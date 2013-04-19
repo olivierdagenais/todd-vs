@@ -23,7 +23,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.IntegrationTests
                 var menuItemCmd = new CommandID(GuidList.CmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
 
                 // Create the DialogBoxListener Thread.
-                var expectedDialogBoxText = string.Format(CultureInfo.CurrentCulture, "{0}\n\nInside {1}.MenuItemCallback()", "SoftwareNinjas.TestOriented.VisualStudio", "SoftwareNinjas.TestOriented.VisualStudio.SoftwareNinjas_TestOriented_VisualStudioPackage");
+                var expectedDialogBoxText = string.Format(CultureInfo.CurrentCulture, "{0}\n\nInside {1}.MenuItemCallback()", "SoftwareNinjas.TestOriented.VisualStudio", "SoftwareNinjas.TestOriented.VisualStudio.Package");
                 var purger = new DialogBoxPurger(NativeMethods.IDOK, expectedDialogBoxText);
                 
                 try
