@@ -20,7 +20,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.IntegrationTests
         {
             UIThreadInvoker.Invoke((ThreadInvoker) delegate
             {
-                var menuItemCmd = new CommandID(GuidList.guidSoftwareNinjas_TestOriented_VisualStudioCmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
+                var menuItemCmd = new CommandID(GuidList.CmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
 
                 // Create the DialogBoxListener Thread.
                 var expectedDialogBoxText = string.Format(CultureInfo.CurrentCulture, "{0}\n\nInside {1}.MenuItemCallback()", "SoftwareNinjas.TestOriented.VisualStudio", "SoftwareNinjas.TestOriented.VisualStudio.SoftwareNinjas_TestOriented_VisualStudioPackage");

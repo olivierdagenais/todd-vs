@@ -29,7 +29,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(GuidList.guidSoftwareNinjas_TestOriented_VisualStudioPkgString)]
+    [Guid(GuidList.PkgString)]
     public sealed class SoftwareNinjas_TestOriented_VisualStudioPackage : Package
     {
         /// <summary>
@@ -64,7 +64,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
             if ( null != mcs )
             {
                 // Create the command for the menu item.
-                var menuCommandId = new CommandID(GuidList.guidSoftwareNinjas_TestOriented_VisualStudioCmdSet, (int)PkgCmdIDList.cmdidGenerateTestStub);
+                var menuCommandId = new CommandID(GuidList.CmdSet, (int)PkgCmdIDList.cmdidGenerateTestStub);
                 var menuItem = new MenuCommand(MenuItemCallback, menuCommandId );
                 mcs.AddCommand( menuItem );
             }

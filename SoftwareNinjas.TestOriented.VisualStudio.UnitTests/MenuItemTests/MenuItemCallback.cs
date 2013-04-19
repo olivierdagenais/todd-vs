@@ -40,7 +40,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests.MenuItemTests
             Assert.AreEqual(0, package.SetSite(serviceProvider), "SetSite did not return S_OK");
 
             //Verify that the menu command can be found
-            var menuCommandId = new CommandID(GuidList.guidSoftwareNinjas_TestOriented_VisualStudioCmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
+            var menuCommandId = new CommandID(GuidList.CmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
             var info = typeof(Package).GetMethod("GetService", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.IsNotNull(info);
             var mcs = info.Invoke(package, new object[] { ( typeof(IMenuCommandService) ) }) as OleMenuCommandService;

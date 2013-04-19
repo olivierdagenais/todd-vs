@@ -25,7 +25,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.IntegrationTests
 
                 //Validate package load
                 IVsPackage package;
-                var packageGuid = new Guid(GuidList.guidSoftwareNinjas_TestOriented_VisualStudioPkgString);
+                var packageGuid = new Guid(GuidList.PkgString);
                 Assert.IsTrue(0 == shellService.LoadPackage(ref packageGuid, out package));
                 Assert.IsNotNull(package, "Package failed to load");
 
