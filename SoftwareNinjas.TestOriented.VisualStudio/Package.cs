@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using System.Text;
+using System.Text.RegularExpressions;
+using EnvDTE;
+using Microsoft.VisualBasic;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -63,36 +69,248 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
             {
                 // Create the command for the menu item.
                 var menuCommandId = new CommandID(GuidList.CmdSet, (int)PkgCmdIDList.cmdidGenerateTestStub);
-                var menuItem = new MenuCommand(MenuItemCallback, menuCommandId );
+                var menuItem = new MenuCommand(GenerateTestStub, menuCommandId );
                 mcs.AddCommand( menuItem );
             }
         }
         #endregion
+
+        private const string CrLf = "\r\n";
 
         /// <summary>
         /// This function is the callback used to execute a command when the a menu item is clicked.
         /// See the Initialize method to see how the menu item is associated to this function using
         /// the OleMenuCommandService service and the MenuCommand class.
         /// </summary>
-        private void MenuItemCallback(object sender, EventArgs e)
+        private void GenerateTestStub(object sender, EventArgs e)
         {
-            // Show a Message Box to prove we were here
             var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
             var clsid = Guid.Empty;
-            int result;
-            ErrorHandler.ThrowOnFailure(uiShell.ShowMessageBox(
-                       0,
-                       ref clsid,
-                       "SoftwareNinjas.TestOriented.VisualStudio",
-                       string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this),
-                       string.Empty,
-                       0,
-                       OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                       OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST,
-                       OLEMSGICON.OLEMSGICON_INFO,
-                       0,        // false
-                       out result));
+
+            var dte = (DTE) GetGlobalService(typeof (DTE));
+            var document = dte.ActiveDocument;
+            var sel = (TextSelection) document.Selection;
+            var pnt = sel.ActivePoint;
+            var projectItem = document.ProjectItem;
+            var fileCodeModel = projectItem.FileCodeModel;
+            var cut = (CodeClass) fileCodeModel.CodeElementFromPoint(pnt, vsCMElement.vsCMElementClass);
+            // TODO: stop right here if the class already ends in "Test"
+            CodeFunction mut = null;
+            try
+            {
+                mut = (CodeFunction) fileCodeModel.CodeElementFromPoint(pnt, vsCMElement.vsCMElementFunction);
+            }
+            catch (COMException)
+            {
+                // there may not be any methods, or cursor was not near any method
+            }
+            // TODO: stop right here if the method is not visible to the test class
+
+            var testClassName = cut.Name + "Test";
+            var testClassFileName = testClassName + ".cs";
+            var testClassFile = dte.Solution.FindProjectItem(testClassFileName);
+            if (testClassFile == null)
+            {
+                var put = projectItem.ContainingProject;
+                var putName = put.Name;
+                var candidates = FindTestProject(putName, dte);
+                Project testProject;
+                if (candidates.Count == 0)
+                {
+                    int result;
+                    ErrorHandler.ThrowOnFailure(
+                        uiShell.ShowMessageBox(
+                            0,
+                            ref clsid,
+                            "Sucks to be you",
+                            string.Format(CultureInfo.CurrentCulture, 
+                                "There exists no test project for the project '{0}'.", putName),
+                            string.Empty,
+                            0,
+                            OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                            OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST,
+                            OLEMSGICON.OLEMSGICON_INFO,
+                            0,        // false
+                            out result
+                        )
+                    );
+                    return;
+                }
+                if (candidates.Count == 1)
+                {
+                    testProject = candidates[0];
+                }
+                else
+                {
+                    var sb = new StringBuilder();
+                    var c = 0;
+                    foreach (var project in candidates)
+                    {
+                        sb.Append(c);
+                        sb.Append(" = ");
+                        sb.AppendLine(project.Name);
+                        c = c + 1;
+                    }
+                    var selectionString = 
+                        Interaction.InputBox(sb.ToString(), "Which project should the test class be added to?", "0");
+                    var selectedIndex = Convert.ToInt32(selectionString, 10);
+                    testProject = candidates[selectedIndex];
+                }
+                var testProjectRoot = Path.GetDirectoryName(testProject.FullName);
+                var testClassFolder = testProjectRoot;
+                var targetNamespace = testProject.Name;
+                if (cut.Namespace.Name.StartsWith(put.Name + "."))
+                {
+                    var rootOffset = cut.Namespace.Name.Remove(0, put.Name.Length + 1);
+                    testClassFolder = Path.Combine(testClassFolder, rootOffset);
+                    targetNamespace = targetNamespace + "." + rootOffset;
+                }
+                var absolutePathToTestClass = Path.Combine(testClassFolder, testClassFileName);
+                var testClassContents = new StringBuilder();
+                testClassContents.AppendLine("using System;");
+                testClassContents.AppendLine("using Microsoft.VisualStudio.TestTools.UnitTesting;");
+
+                testClassContents.AppendFormat("using {0};", cut.Namespace.Name).AppendLine();
+                testClassContents.AppendLine();
+
+                testClassContents.AppendFormat("namespace {0}", targetNamespace).AppendLine();
+                testClassContents.AppendLine("{");
+                testClassContents.AppendLine("    /// <summary>");
+                testClassContents.AppendFormat(@"    /// A class to test <see cref=""{0}""/>.", cut.Name).AppendLine();
+                testClassContents.AppendLine("    /// </summary>");
+                testClassContents.AppendLine("    [TestClass]");
+                testClassContents.AppendFormat("    public class {0}", testClassName).AppendLine();
+                testClassContents.AppendLine("    {");
+                testClassContents.AppendLine("    }");
+                testClassContents.AppendLine("}");
+                File.WriteAllText(absolutePathToTestClass, testClassContents.ToString());
+
+                testClassFile = testProject.ProjectItems.AddFromFile(absolutePathToTestClass);
+            }
+            testClassFile.Open(EnvDTE.Constants.vsViewKindCode);
+            testClassFile.Document.Activate();
+
+            var testFileElements = testClassFile.FileCodeModel.CodeElements;
+            var testClass = (CodeClass) FindElement(testFileElements, testClassName, vsCMElement.vsCMElementClass);
+
+            if (mut != null)
+            {
+                try
+                {
+                    dte.UndoContext.Open("Insert test method");
+
+                    CodeFunction testMethod = testClass.AddFunction(mut.Name + "TODO", vsCMFunction.vsCMFunctionFunction,
+                                                                    vsCMTypeRef.vsCMTypeRefVoid);
+
+                    var editPoint = testMethod.StartPoint.CreateEditPoint();
+
+                    // Adding the "[TestMethod]" attribute this way avoid the DTE adding it as "[Test()]" when using AddAttribute()
+                    editPoint.Insert("[TestMethod]");
+                    editPoint.Insert(CrLf);
+                    editPoint.Indent(null, 2);
+
+                    editPoint.LineDown(2);
+                    editPoint.StartOfLine();
+                    // TODO: generate local variables to match the parameter names & types
+                    //var parameters = mut.Parameters;
+                    //foreach (var codeElement2 in parameters)
+                    //{
+                    //    CodeParameter = codeElement2;
+                    //    editPoint.Indent(CodeParameter.Name);
+                    //}
+
+                    // TODO: check if the methodUnderTest is an instance or a static method
+                    // TODO: check if the methodUnderTest returns a value or not
+                    // TODO: use editPoint.Insert("Text") instead of the following?
+                    editPoint.Indent(null, 3);
+                    editPoint.Insert("var actual = " + cut.Name + "." + mut.Name + "();");
+                    editPoint.Insert(CrLf);
+                    editPoint.Indent(null, 3);
+                    editPoint.Insert("Assert.AreEqual(0, actual);");
+
+                    // place the cursor at the method call
+                    editPoint.LineUp(1);
+                    var selection = (TextSelection) testClassFile.Document.Selection;
+                    selection.GotoLine(editPoint.Line);
+                    selection.EndOfLine(false);
+                    selection.CharLeft(false, 2);
+                }
+                finally
+                {
+                    dte.UndoContext.Close();
+                }
+            }
         }
 
+        internal List<Project> FindTestProject(string projectUnderTestName, DTE dte)
+        {
+            var candidates = new List<Project>(dte.Solution.Projects.Count);
+
+            foreach (var project in RecurseProjects(dte))
+            {
+                if (Regex.IsMatch(project.Name, projectUnderTestName + @"\..*Test"))
+                {
+                    candidates.Add(project);
+                }
+            }
+
+            return candidates;
+        }
+
+        internal List<Project> RecurseProjects(DTE dte)
+        {
+            var result = new List<Project>(dte.Solution.Projects.Count);
+
+            foreach (Project project in dte.Solution.Projects)
+            {
+                InnerRecurseProjects(project, result);
+            }
+
+            return result;
+        }
+
+        private const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+        internal void InnerRecurseProjects(Project project, List<Project> projects)
+        {
+            
+            if (SolutionFolder == project.Kind)
+            {
+                foreach (ProjectItem projectItem in project.ProjectItems)
+                {
+                    if (projectItem.SubProject != null)
+                    {
+                        InnerRecurseProjects(projectItem.SubProject, projects);
+                    }
+                }
+            }
+            else
+            {
+                projects.Add(project);
+            }
+        }
+
+        internal CodeElement FindElement(CodeElements elements, string name, vsCMElement kind)
+        {
+            foreach (CodeElement element in elements)
+            {
+                if (element.Kind == kind)
+                {
+                    if (element.Name == name)
+                    {
+                        return element;
+                    }
+                }
+                var children = element.Children;
+                if (children != null && children.Count > 0)
+                {
+                    var result = FindElement(children, name, kind);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+            return null;
+        }
     }
 }
