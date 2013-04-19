@@ -12,7 +12,6 @@ PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 using Microsoft.VsSDK.UnitTestLibrary;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SoftwareNinjas.TestOriented.VisualStudio;
 
 namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests
 {

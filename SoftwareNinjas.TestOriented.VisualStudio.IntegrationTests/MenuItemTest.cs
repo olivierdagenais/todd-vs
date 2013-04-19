@@ -12,7 +12,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.IntegrationTests
         private delegate void ThreadInvoker();
 
         /// <summary>
-        ///A test for lauching the command and closing the associated dialogbox
+        ///A test for launching the command and closing the associated dialog box
         ///</summary>
         [TestMethod]
         [HostType("VS IDE")]
