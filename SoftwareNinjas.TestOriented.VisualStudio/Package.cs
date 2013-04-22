@@ -48,8 +48,6 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
             Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
         }
 
-
-
         /////////////////////////////////////////////////////////////////////////////
         // Overridden Package Implementation
         #region Package Members
@@ -199,12 +197,13 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
                 {
                     dte.UndoContext.Open("Insert test method");
 
-                    CodeFunction testMethod = testClass.AddFunction(mut.Name + "TODO", vsCMFunction.vsCMFunctionFunction,
+                    var testMethod = testClass.AddFunction(mut.Name + "TODO", vsCMFunction.vsCMFunctionFunction,
                                                                     vsCMTypeRef.vsCMTypeRefVoid);
 
                     var editPoint = testMethod.StartPoint.CreateEditPoint();
 
-                    // Adding the "[TestMethod]" attribute this way avoid the DTE adding it as "[Test()]" when using AddAttribute()
+                    // Adding the "[TestMethod]" attribute this way avoid the DTE adding it as 
+                    // "[Test()]" when using AddAttribute()
                     editPoint.Insert("[TestMethod]");
                     editPoint.Insert(CrLf);
                     editPoint.Indent(null, 2);
