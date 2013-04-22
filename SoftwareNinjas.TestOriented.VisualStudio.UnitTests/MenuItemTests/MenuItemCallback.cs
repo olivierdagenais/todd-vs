@@ -46,32 +46,5 @@ namespace SoftwareNinjas.TestOriented.VisualStudio.UnitTests.MenuItemTests
             var mcs = info.Invoke(package, new object[] { ( typeof(IMenuCommandService) ) }) as OleMenuCommandService;
             Assert.IsNotNull(mcs.FindCommand(menuCommandId));
         }
-
-        [TestMethod]
-        public void MenuItemCallback()
-        {
-            // Create the package
-            var package = new Package() as IVsPackage;
-            Assert.IsNotNull(package, "The object does not implement IVsPackage");
-
-            // Create a basic service provider
-            var serviceProvider = OleServiceProvider.CreateOleServiceProviderWithBasicServices();
-
-            // Create a UIShell service mock and proffer the service so that it can called from the MenuItemCallback method
-            var uishellMock = UIShellServiceMock.GetUiShellInstance();
-            serviceProvider.AddService(typeof(SVsUIShell), uishellMock, true);
-
-            // Site the package
-            Assert.AreEqual(0, package.SetSite(serviceProvider), "SetSite did not return S_OK");
-
-            //Invoke private method on package class and observe that the method does not throw
-            var info = package.GetType().GetMethod("MenuItemCallback", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(info, "Failed to get the private method MenuItemCallback throug refplection");
-            info.Invoke(package, new object[] { null, null });
-
-            //Clean up services
-            serviceProvider.RemoveService(typeof(SVsUIShell));
-
-        }
     }
 }

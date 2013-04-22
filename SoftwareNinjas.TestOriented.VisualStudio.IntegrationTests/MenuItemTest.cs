@@ -1,44 +1,10 @@
-﻿using System.Globalization;
-using System.ComponentModel.Design;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VsSDK.IntegrationTestLibrary;
-using Microsoft.VSSDK.Tools.VsIdeTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SoftwareNinjas.TestOriented.VisualStudio.IntegrationTests
 {
     [TestClass]
     public class MenuItemTest
     {
-        private delegate void ThreadInvoker();
-
-        /// <summary>
-        ///A test for launching the command and closing the associated dialog box
-        ///</summary>
-        [TestMethod]
-        [HostType("VS IDE")]
-        public void LaunchCommand()
-        {
-            UIThreadInvoker.Invoke((ThreadInvoker) delegate
-            {
-                var menuItemCmd = new CommandID(GuidList.CmdSet, (int) PkgCmdIDList.cmdidGenerateTestStub);
-
-                // Create the DialogBoxListener Thread.
-                var expectedDialogBoxText = string.Format(CultureInfo.CurrentCulture, "{0}\n\nInside {1}.MenuItemCallback()", "SoftwareNinjas.TestOriented.VisualStudio", "SoftwareNinjas.TestOriented.VisualStudio.Package");
-                var purger = new DialogBoxPurger(NativeMethods.IDOK, expectedDialogBoxText);
-                
-                try
-                {
-                    purger.Start();
-
-                    var testUtils = new TestUtils();
-                    testUtils.ExecuteCommand(menuItemCmd);
-                }
-                finally
-                {
-                    Assert.IsTrue(purger.WaitForDialogThreadToTerminate(), "The dialog box has not shown");
-                }
-            });
-        }
 
     }
 }
