@@ -197,8 +197,12 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
                 {
                     dte.UndoContext.Open("Insert test method");
 
-                    var testMethod = testClass.AddFunction(mut.Name + "TODO", vsCMFunction.vsCMFunctionFunction,
-                                                                    vsCMTypeRef.vsCMTypeRefVoid);
+                    var testMethod = testClass.AddFunction(
+                        mut.Name + "TODO",
+                        vsCMFunction.vsCMFunctionFunction,
+                        vsCMTypeRef.vsCMTypeRefVoid,
+                        0 /* position */,
+                        vsCMAccess.vsCMAccessPublic);
 
                     var editPoint = testMethod.StartPoint.CreateEditPoint();
 
