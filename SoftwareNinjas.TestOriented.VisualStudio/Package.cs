@@ -194,8 +194,7 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
             if (mut != null)
             {
                 var testMethodName = mut.Name + "TODO";
-                var lastCodeElementAlphabeticallyBefore = FindInsertionPointElement(testFileElements, testMethodName);
-                var position = lastCodeElementAlphabeticallyBefore ?? (object) -1;
+                var position = FindInsertionPoint(testFileElements, testMethodName);
                 try
                 {
                     dte.UndoContext.Open("Insert test method");
@@ -248,9 +247,9 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
             }
         }
 
-        internal static CodeElement FindInsertionPointElement(CodeElements elements, string name)
+        internal static object FindInsertionPoint(CodeElements elements, string name)
         {
-            CodeElement lastElement = null;
+            object lastElement = 0;
             foreach (CodeElement element in elements)
             {
                 if (element.Kind == vsCMElement.vsCMElementFunction)
@@ -261,17 +260,21 @@ namespace SoftwareNinjas.TestOriented.VisualStudio
                     }
                     lastElement = element;
                 }
-                var children = element.Children;
-                if (children != null && children.Count > 0)
+                else
                 {
-                    var result = FindInsertionPointElement(children, name);
-                    if (result != null)
+                    var children = element.Children;
+                    if (children != null && children.Count > 0)
                     {
-                        return result;
+                        var result = FindInsertionPoint(children, name);
+                        // TODO: always return result by now?
+                        if (result != (object) -1)
+                        {
+                            return result;
+                        }
                     }
                 }
             }
-            return null;
+            return -1;
         }
 
         internal List<Project> FindTestProject(string projectUnderTestName, DTE dte)
